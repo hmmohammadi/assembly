@@ -167,10 +167,10 @@ org 100h
             jmp sayi_al                                         ; tekrar kullanicidan sayi almak uzere sayi al etiketine dallan.
     
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    FIB:  
+    fib:  
     mov ax, FIB1      ;
     cmp SAYI, ax      ; fibonacci < girilen sayidan daha kucuk olup olmadigini kontrol et
-    jb FIB_SON        ;
+    jb fib_son        ;
 
     
     mov bx, FIB1      ;   TEMP = FIB1  bx = temp ; 
@@ -194,117 +194,117 @@ org 100h
     call SAYI_YAZDIR            ; n'inci fibonacci sayisni  yazdir
     
     cmp FIB0,1           ;1 ise asal
-    je ASAL              ; asal yazmak uzere asal etketine dallan
+    je asal              ; asal yazmak uzere asal etketine dallan
  
     cmp FIB0,2           ; 2 ISE ASAL
-    je ASAL              ; asal yazmak uzere asal etketine dallan
+    je asal              ; asal yazmak uzere asal etketine dallan
     
-    xor DX,DX     ; dx'i temizle
+    xor dx,dx     ; dx'i temizle
     mov ax, FIB0  ; fib0'i ax'e ata
-    mov CX, 2     ;
-    div CX        ;    2'YE BOLME
-    cmp DX,0      ;    kalan 0 ise  
-    je NOT_ASAL   ;    asal degil ve asal_degil etiketine dallan
+    mov cx, 2     ;
+    div cx        ;    2'YE BOLME
+    cmp dx,0      ;    kalan 0 ise  
+    je asal_degil   ;    asal degil ve asal_degil etiketine dallan
       
       
        
     mov N,0                    ;
     mov ax, FIB0               ;
-    xor SI,SI                  ;
+    xor si,si                  ;
     basamak:                   ;
-        xor DX,DX              ;   amac n'inci fibonacci sayisinin rakamlarini bulmak 
-        mov CX, 10             ;
-        div CX                 ;       
-        mov RAKAMLAR[SI], DL   ;       
-        INC N                  ; basamak sayisini tutan degiskeni bir arttir
-        INC SI                 ; adresi ilerlet
+        xor dx,dx              ;   amac n'inci fibonacci sayisinin rakamlarini bulmak 
+        mov cx, 10             ;
+        div cx                 ;       
+        mov RAKAMLAR[si], DL   ;       
+        inc N                  ; basamak sayisini tutan degiskeni bir arttir
+        inc si                 ; adresi ilerlet
         cmp ax,0               ; son basamak mi sayi sifirdan buyuk ise
         JA basamak             ;
            
            
     
     cmp FIB0,3            ; fibonacci 3 ise esit ise
-    je ASAL               ; asal etiketine dallan
+    je asal               ; asal etiketine dallan
                           ;
-    xor SI,SI             ; si'yi temizle
+    xor si,si             ; si'yi temizle
     xor ax,ax             ;    
-    mov CX, N             ; basamak sayisini tutan degiskeni cx'e ata ; amac basamaklarda gezinlelim ve toplamlarini bolunebilme kurallari icin kullanalim
+    mov cx, N             ; basamak sayisini tutan degiskeni cx'e ata ; amac basamaklarda gezinlelim ve toplamlarini bolunebilme kurallari icin kullanalim
 basamak_topla:                     ;
-    add AL, RAKAMLAR[SI]  ;
-    INC SI                ; 
+    add al, RAKAMLAR[si]  ;
+    inc si                ; 
     LOOP basamak_topla    ;         
                           ;
-    mov CH, 3             ;  3 icin  bolunebilme kurali
-    div CH                ;
-    cmp AH, 0             ;
-    je NOT_ASAL           ;
+    mov ch, 3             ;  3 icin  bolunebilme kurali
+    div ch                ;
+    cmp ah, 0             ;
+    je asal_degil           ;
     
     
     
     cmp FIB0,5            ; fibonacci 5'e esit ise
-    je ASAL               ; asal etiketine dallan
+    je asal               ; asal etiketine dallan
                           ;
     cmp RAKAMLAR[0], 0    ; RAKAMLAR dizisi fibonacci sayinin tum basamak rakamlarini tuttuguna gore
-    je NOT_ASAL           ;
+    je asal_degil           ;
     cmp RAKAMLAR[0], 5    ; 5 icin  bolunebilme kurali     
-    je NOT_ASAL           ;
+    je asal_degil           ;
                                        
      
      
     cmp FIB0,7            ; fibonacci 7'ye esit ise
-    je ASAL               ; asal etiketine dallan
+    je asal               ; asal etiketine dallan
                           ;
     xor ax,ax             ;
     xor bx,bx             ;
-    xor SI,SI             ;
-    xor DI,DI             ;     
-	mov DI, offset YEDI   ; DIZI 
+    xor si,si             ;
+    xor di,di             ;     
+	mov di, offset YEDI   ; DIZI 
                           ;
-    mov CX, N             ; N basamak kadar gezin
+    mov cx, N             ; N basamak kadar gezin
 gezin:                    ;                       
-    push CX               ; cx'i koru
-    mov AL,RAKAMLAR[SI]   ; basamaktaki sayiyi al'e kopyala                           [SI]
-    mov CL,YEDI[SI]       ; yedi dizisinden ilgili basamaga karsilik gelen carpani al [SI]
-    IMUL CL               ; 
+    push cx               ; cx'i koru
+    mov al,RAKAMLAR[si]   ; basamaktaki sayiyi al'e kopyala                           [SI]
+    mov cl,YEDI[si]       ; yedi dizisinden ilgili basamaga karsilik gelen carpani al [SI]
+    IMUL cl               ; 
     add bx,ax             ;    7 icin  bolunebilme kurali
-    INC SI                ;
-    INC DI                ;  YEDI dizisindeki sonraki sayiyi elde etmek icin di'yi bir arttir
-    pop CX                ;  cx'i geri al - dongunun N kadar calismasi icin push pop edildi.
+    inc si                ;
+    inc di                ;  YEDI dizisindeki sonraki sayiyi elde etmek icin di'yi bir arttir
+    pop cx                ;  cx'i geri al - dongunun N kadar calismasi icin push pop edildi.
     LOOP gezin            ;  
                           ;
     mov ax,bx             ;
-    mov CH,7              ;   7 icin  bolunebilme kurali
-    Idiv CH               ;
+    mov ch,7              ;   7 icin  bolunebilme kurali
+    Idiv ch               ;
                           ;
-    cmp AH, 0             ;
-    je NOT_ASAL           ;
+    cmp ah, 0             ;
+    je asal_degil           ;
                             
                             
                             
     cmp FIB0,11           ; fibonacci 11'e esit ise
-    je ASAL               ; asal etiketine dallan
+    je asal               ; asal etiketine dallan
      
-    xor SI,SI             ;      
-	mov CX, N             ;
+    xor si,si             ;      
+	mov cx, N             ;
 for:                      ;
-    push CX               ;
-    xor AH,AH             ;         
-    mov AL,INDIS          ;
-    mov CH,2              ; INDIS -> amac -> n'inci basamagin cift mi tek mi diye anlamak +-+-...
-    div CH                ;
-    cmp AH,0              ; INDIS sifir ya da cift ise + pozitif olarak degerlendir
+    push cx               ;
+    xor ah,ah             ;         
+    mov al,INDIS          ;
+    mov ch,2              ; INDIS -> amac -> n'inci basamagin cift mi tek mi diye anlamak +-+-...
+    div ch                ;
+    cmp ah,0              ; INDIS sifir ya da cift ise + pozitif olarak degerlendir
     je pozitif            ;
-    sbb BL,RAKAMLAR[SI]   ; yoksa BL(pozitiflari tutan register)'den cikar 
-    JMP sonraki           ;  dallan
+    sbb bl,RAKAMLAR[si]   ; yoksa BL(pozitiflari tutan register)'den cikar 
+    jmp sonraki           ;  dallan
                           ;
 pozitif:                  ; 11'in  bolunme kurali
-    add BL,RAKAMLAR[SI]   ;
+    add bl,RAKAMLAR[si]   ;
                           ;
 sonraki:                  ;
-    INC SI                ;
-    INC INDIS             ;
-    pop CX                ;        
-    LOOP for              ;
+    inc si                ;
+    inc INDIS             ;
+    pop cx                ;        
+    loop for              ;
                           ;
     cmp bl, 0             ;
     jge devam             ;
@@ -315,130 +315,124 @@ sonraki:                  ;
         mov ch, 11        ;
         div ch            ;
         cmp ah, 0         ; 11'in  bolunme kurali
-        je NOT_ASAL       ;
+        je asal_degil     ;
                                              
     
     
     cmp FIB0,13           ; fibonacci 13'e esit ise
-    je ASAL               ;
+    je asal               ;
     
-    xor DX,DX             ;
+    xor dx,dx             ;
     mov ax, FIB0          ; ax -> X
-    mov CX, 10            ;
-    div CX                ; X = 10a+b
+    mov cx, 10            ;
+    div cx                ; X = 10a+b
     mov bx,ax             ; bx -> a
                           ; 13'nin  bolunme kurali
-    mov ax,DX             ; ax -> b 
-    mov CX,4              ;
+    mov ax,dx             ; ax -> b 
+    mov cx,4              ;
                           ;
-    MUL CX                ;   4*b
+    mul cx                ;   4*b
     add bx,ax             ;   a + 4*b
                           ;
-    xor DX,DX             ;
+    xor dx,dx             ;
     mov ax,bx             ;
-    mov CX,13             ;
-    div CX                ;
-    cmp DX,0              ;
-    je NOT_ASAL           ; 
+    mov cx,13             ;
+    div cx                ;
+    cmp dx,0              ;
+    je asal_degil         ; 
     
     
     cmp FIB0,17           ; fibonacci 17'ye esit ise
-    je ASAL               ; asal etiketine dallan
+    je asal               ; asal etiketine dallan
     
-    xor DX,DX             ;
+    xor dx,dx             ;
     mov ax, FIB0          ;   ax -> X
-    mov CX, 10            ;
-    div CX                ;   X = 10a+b
+    mov cx, 10            ;
+    div cx                ;   X = 10a+b
     mov bx,ax             ;   bx -> a
                           ;   17'nin  bolunme kurali
-    mov ax,DX             ;   ax -> b 
-    mov CX,5              ;
+    mov ax,dx             ;   ax -> b 
+    mov cx,5              ;
                           ;
-    MUL CX                ;   5*b
+    mul cx                ;   5*b
     sub bx,ax             ;   a - 5*b
                           ;
-    xor DX,DX             ;
+    xor dx,dx             ;
     mov ax,bx             ;
-    mov CX,17             ;
-    div CX                ;
-    cmp DX,0              ;
-    je NOT_ASAL           ; 
+    mov cx,17             ;
+    div cx                ;
+    cmp dx,0              ;
+    je asal_degil         ; 
     
     
     
     cmp FIB0,19           ; fibonacci 19'a esit ise
-    je ASAL               ; asal etiketine dallan
+    je asal               ; asal etiketine dallan
            
-    xor DX,DX       
+    xor dx,dx       
     mov ax, FIB0          ;
-    mov CX, 10            ;  ax -> X
-    div CX                ;  X = 10a+b
+    mov cx, 10            ;  ax -> X
+    div cx                ;  X = 10a+b
     mov bx,ax             ;  bx -> a
                           ;  19'un  bolunme kurali
-    mov ax,DX             ;  ax -> b 
-    mov CX,2              ;  cx -> 2
+    mov ax,dx             ;  ax -> b 
+    mov cx,2              ;  cx -> 2
     
-    MUL CX                ;  2*b
+    mul cx                ;  2*b
     add bx,ax             ;  2*b + a
                           ;
-    xor DX,DX             ;
+    xor dx,dx             ;
     mov ax,bx             ;
-    mov CX,19             ;  19'un  bolunme kurali
-    div CX                ;
-    cmp DX,0              ;
-    je NOT_ASAL           ; 
+    mov cx,19             ;  19'un  bolunme kurali
+    div cx                ;
+    cmp dx,0              ;
+    je asal_degil         ; 
     
     
     
     cmp FIB0,23           ;  fibonacci 23'e esit ise
-    je ASAL               ;  asal etiketine dallan
+    je asal               ;  asal etiketine dallan
            
-    xor DX,DX             ;  23'un  bolunme kurali
+    xor dx,dx             ;  23'un  bolunme kurali
     mov ax, FIB0          ;  ax -> X 
-    mov CX, 10            ;  cx -> 10
-    div CX                ;  X  = 10*a+b
+    mov cx, 10            ;  cx -> 10
+    div cx                ;  X  = 10*a+b
     mov bx,ax             ;  bx -> a
                           ; 
-    mov ax,DX             ;  ax -> b
-    mov CX,7              ;  cx -> 7
+    mov ax,dx             ;  ax -> b
+    mov cx,7              ;  cx -> 7
     
-    MUL CX                ;  7*b
+    mul cx                ;  7*b
     add bx,ax             ;  7*b + a
                           ;
-    xor DX,DX             ;
+    xor dx,dx             ;
     mov ax,bx             ;
-    mov CX,23             ;  23'un  bolunme kurali
-    div CX                ;
-    cmp DX,0              ;
-    je NOT_ASAL           ; 
+    mov cx,23             ;  23'un  bolunme kurali
+    div cx                ;
+    cmp dx,0              ;
+    je asal_degil         ; 
 
     
-    ASAL:
+    asal:
         ;mov ax, offset ASALLIK      ;  asal olmasi durumunda                ;
         KATAR_YAZ ASALLIK  
     
-    NOT_ASAL:    
+    asal_degil:    
                                      ; asal degilse sayet
                                      ; satir basina gec
         call SATIR_ATLA
         
-    INC SAYAC                       ; SAYAC'i bir attir
-    JMP FIB
+    inc SAYAC                       ; SAYAC'i bir attir
+    jmp fib
     
 
-FIB_SON:
+fib_son:
         
-        
-        
-        
-        
-        
-        
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                
-              
-       
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;      
 ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; SATIR_ATLA ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; Yeni satira gecmeye yarayan bir fonksiyon ;;;;;;;;;;;;;;;;
 
 SATIR_ATLA  proc near
     push dx
@@ -456,8 +450,11 @@ SATIR_ATLA  proc near
     pop dx
     ret
 SATIR_ATLA endp
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; SATIR_ATLA ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;SAYI OUTPUT VERME				
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SAYI_YAZDIR ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;; Her cagirildiginda ilgili sayiyi yazdirir ;;;;;;;;;;;;;;;;			
 SAYI_YAZDIR  proc NEAR
         push cx              ; cx'i koru
         push dx              ; dx'i koru
@@ -480,24 +477,26 @@ goster:                      ;
         cmp ax,0             ;
         je gbitir            ;
         call KARAKTER_YAZDIR ; amac -> yigindan karakter oku ve bastir           
-        JMP goster           ;
+        jmp goster           ;
         
 gbitir:                      ;
         pop dx               ;
         pop cx               ;  korunmus degerleri yigindan geri al
         RET                  ;
-SAYI_YAZDIR    endp                 
+SAYI_YAZDIR    endp
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;SAYI YAZDIR ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-
-;KARAKTER OUTPUT VERME
+;;;;;;;;;;;;;;;;;;;;;;;;;;;; KARAKTER_YAZDIR ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;; Her cagirildiginda str output'a bir karakter bastirir;;;;;;;;;;;
 KARAKTER_YAZDIR proc NEAR            
 		push ax              ;
 		push dx              ;
-		mov DL,AL            ; KAYNAK: emu8086
-		mov AH,2             ; INT 21h / AH=2 - write character to standard output.
+		mov dl,al            ; KAYNAK: emu8086
+		mov ah,2             ; INT 21h / AH=2 - write character to standard output.
 		int 21h              ; DL = character to write, after execution AL = DL.
 		pop dx               ;
 		pop ax               ;
 		ret                  ;
 KARAKTER_YAZDIR endp
+;;;;;;;;;;;;;;;;;;;;;;;;;;;; KARAKTER_YAZDIR ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
