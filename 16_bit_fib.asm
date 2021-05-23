@@ -1,3 +1,4 @@
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; KATAR YAZ ;;;;;;;;;;;;;;;;;;;;;;;;
 KATAR_YAZ macro katar_offset     ; katar_offset katarin efektif adresi
     push dx
@@ -12,9 +13,15 @@ KATAR_YAZ macro katar_offset     ; katar_offset katarin efektif adresi
 endm                                
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; KATAR YAZ ;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;;;; BASAMAK_HESAPLA ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;; BASAMAK_HESAPLA ;;;;;;;;;;;;;;;;;;;;;;;;;;
+;         Bu makro kullanici tarafindan girilen
+;         girdinin decimal karsiligini bulup parametre
+;         olarak aldigi degiskene atama yapar.
+;
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 BASAMAK_HESAPLA macro liste_offset sayi_offset
-    push ax             ;
+    push ax             ; 
     push bx             ;
     push cx             ;  Registerlerin onceki degerlerini koru
     push dx             ;
@@ -25,13 +32,13 @@ BASAMAK_HESAPLA macro liste_offset sayi_offset
     xor ax, ax ; ax'i temizle
     xor bx, bx ; bx'i temizle
     
-    mov si, offset liste_offset             
-    mov di, offset sayi_offset
+    mov si, offset liste_offset            ; karakterleri tutan dizinin efektik adresini si'ye yukle      
+    mov di, offset sayi_offset             ; kullanicinin girdigi sayiyi tutacak olan degiskenin efektif adresini di'ye yukle
     
-    mov cl, [si+1]
+    mov cl, [si+1]                         ; kullanicin kac karakter girdigini tutan degiskenin degerini cl'ye kopyala
    
     hesapla:
-        mov al, [si+2]
+        mov al, [si+2]                                                             ;  hesapla etiketine her girdiginde karakterleri birer birer al'ye yukle
         
         cmp al, 48                          ; 0'a esit ya da buyuk mu ?            ;
         jl hatali_girdi                                                            ;
@@ -61,10 +68,10 @@ BASAMAK_HESAPLA macro liste_offset sayi_offset
         je bese
         
         bese:                                                                      ;
-           xor bx, bx                                                              ;
-           xor dx, dx                                                              ;
-           mov bx, offset ONBIN                                                    ;
-           TOPLA                                                                   ;
+           xor bx, bx                                                              ; bx'i temizle
+           xor dx, dx                                                              ; dx'i temizle
+           mov bx, offset ONBIN                                                    ; besinci basamaga karsilik gelen 10000 degerini tutan degiskenin adresini bx'e kopyala
+           TOPLA                                                                   ; 16 bitlik toplama ve carpma islemini yapacak olan macroya dallan.
         dorde:                                                                     ;
            xor bx, bx                                                              ;
            xor dx, dx                                                              ;
@@ -87,9 +94,9 @@ BASAMAK_HESAPLA macro liste_offset sayi_offset
                                                                                    ;
         sifira:                                                                    ;
         xor ax, ax                                                                 ;
-        xor dx, dx                                                                 ;
-                                                                                   ;
-        inc si                                                                     ;
+        xor dx, dx                                                                 ; bir sonraki basamk icin ax'i sifirla
+                                                                                   ; bir sonraki basamk icin bx'i sifirla
+        inc si                                                                     ; bir sonraki karaktere ulasmak uzere si'yi bir arttir
     loop hesapla                                                                   ;
     
     pop dx        ;
@@ -98,8 +105,10 @@ BASAMAK_HESAPLA macro liste_offset sayi_offset
     pop ax        ;
                   
 endm
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;BASAMAK_HESAPLA ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;TOPLA;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;; Bu macro byte'a gore carpma ve toplama islemini gerceklestirmektedir;;;;;;;;;;;
+;;;;;;;;;; Bu macro 32 bitlik 2 degiskeni byte'a gore carpma ve toplama islemini gerceklestirmektedir;;;;
 TOPLA macro
     
    push ax                          ; ax'in degerini koru
@@ -117,15 +126,14 @@ TOPLA macro
 
 endm
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;TOPLA;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;BASAMAK_HESAPLA ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;              
+              
 org 100h
      
     .data                                   ; Degiskenlerin tanimlandigi yer
-        ON              dw 10               ;
-        YUZ             dw 100              ;
-        BIN             dw 1000             ;
-        ONBIN           dw 10000            ;
+        ON              dw 10               ; 2.basamak
+        YUZ             dw 100              ; 3.basamak
+        BIN             dw 1000             ; 4.basamak
+        ONBIN           dw 10000            ; 5.basamak
         
         KULLANICI_TAM_SAYI_GIR_SORGUSU  db  'Lutfen bir sayi giriniz(Max: 4.100.200.300):','$'
         HATA     db 'Hatali girdi, !!!!!','$'; HATALI input ciktisi
@@ -143,16 +151,18 @@ org 100h
         N DW 0                              ; BASAMAK SAYISI        
         YEDI DB 1,3,2,-1,-3,-2,1,3,2,-1     ; yedi'nin bolunebilme kurali icin 
         INDIS DB 0                          ; Bolunebilme kurallari icin o anki basamagin cift mi tek mi 2'ye bolunerek ogremek icin kullanilacak degisken
-    .code
+    
+    
+    .code                                   ; kod segmenti
         
-        mov ax, @data
+        mov ax, @data                       ; data segmentini ax'e yukle
         mov ds, ax
         mov es, ax
         
-        sayi_al:
+        sayi_al:                                                ; kullanicidan girdi alamaya yarayan etiket
             KATAR_YAZ KULLANICI_TAM_SAYI_GIR_SORGUSU            ; Kullanicidan girdi isteme
             call SATIR_ATLA                                     ; yeni satira gec
-            mov ah, 0Ah                                         ; Kullanicidan string oku
+            mov ah, 0Ah                                         ; Kullanicidan string oku -> kaynak emu8086:;input of a string to DS:DX, fist byte is buffer size, second byte is number of chars actually read. this function does not add '$' in the end of string.
             mov dx, offset BUFF                                 ; dx'e BUFF in efektif adresini ata
             int 21h;                                            ; Girdi icin interrupt olustur
             
@@ -166,11 +176,12 @@ org 100h
             call SATIR_ATLA                                     ; yeni satira gec
             jmp sayi_al                                         ; tekrar kullanicidan sayi almak uzere sayi al etiketine dallan.
     
+    
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    fib:  
-    mov ax, FIB1      ;
+    fib:              ; fibonacci sayilarini asalliklari ile beraber bulan etiket
+    mov ax, FIB1      ; fibonacci sayiyi al 
     cmp SAYI, ax      ; fibonacci < girilen sayidan daha kucuk olup olmadigini kontrol et
-    jb fib_son        ;
+    jb fib_son        ; girilen sayidan buyukse fib_son(fibonaccinin bitigi yere)'a  dallan
 
     
     mov bx, FIB1      ;   TEMP = FIB1  bx = temp ; 
@@ -178,48 +189,41 @@ org 100h
     add FIB1, ax      ;   FIB1 = FIB0            ;
     mov FIB0, bx      ;   FIB0 = TEMP            ;
     
-    ;mov ax, offset LPARA                         ;
-    ;call YAZDIR                                  ;
-    KATAR_YAZ LPARA
-    
-    mov ax, SAYAC        ; SAYAC'i ax'e ata      ;
-    call SAYI_YAZDIR            ; SAYAC'i yazdir                      ;  amac  ' F(SAYAB) :  Fibonacci ' yi yazdirmak
-    
-    
-    ;mov ax, offset RPARA                         ;
-    ;call YAZDIR                                  ; 
-    KATAR_YAZ RPARA
-    
-    mov ax, FIB0         ; FIB0'i ax'e ata       ;
-    call SAYI_YAZDIR            ; n'inci fibonacci sayisni  yazdir
-    
-    cmp FIB0,1           ;1 ise asal
+    KATAR_YAZ LPARA                                                                                 ;
+                                                                                                    ;
+    mov ax, SAYAC        ; SAYAC'i ax'e ata                                                         ;
+    call SAYI_YAZDIR     ; SAYAC'i yazdir                                                           ;   amac  ' F(SAYAB) :  Fibonacci ' yi yazdirmak   
+    KATAR_YAZ RPARA      ; parantezi kapatacak katar'i yazdir                                       ;               
+    mov ax, FIB0         ; FIB0'i ax'e ata                                                          ;
+    call SAYI_YAZDIR     ; n'inci fibonacci sayisni  yazdir                                         ;
+                                                                                                    ;
+    cmp FIB0,1           ; 1 ise asal
     je asal              ; asal yazmak uzere asal etketine dallan
  
     cmp FIB0,2           ; 2 ISE ASAL
     je asal              ; asal yazmak uzere asal etketine dallan
     
-    xor dx,dx     ; dx'i temizle
-    mov ax, FIB0  ; fib0'i ax'e ata
-    mov cx, 2     ;
-    div cx        ;    2'YE BOLME
-    cmp dx,0      ;    kalan 0 ise  
-    je asal_degil   ;    asal degil ve asal_degil etiketine dallan
-      
+    xor dx,dx     ; dx'i temizle                                                                     ;
+    mov ax, FIB0  ; fib0'i ax'e ata                                                                  ;
+    mov cx, 2     ;                                                                                  ;
+    div cx        ;                                                                                  ;   2'nin Bolunebilme kurali
+    cmp dx,0      ; kalan 0 ise                                                                      ;
+    je asal_degil ; asal degil ve asal_degil etiketine dallan                                        ;
+                                                                                                     ;
       
        
-    mov N,0                    ;
-    mov ax, FIB0               ;
-    xor si,si                  ;
+    mov N,0                    ; Basamak sayisini tutacak N degiskenini sifirla
+    mov ax, FIB0               ; fiboancci sayiyi al
+    xor si,si                  ; si'yi temizle
     basamak:                   ;
-        xor dx,dx              ;   amac n'inci fibonacci sayisinin rakamlarini bulmak 
+        xor dx,dx              ; amac n'inci fibonacci sayisinin rakamlarini bulmak 
         mov cx, 10             ;
         div cx                 ;       
-        mov RAKAMLAR[si], DL   ;       
+        mov RAKAMLAR[si], dl   ;       
         inc N                  ; basamak sayisini tutan degiskeni bir arttir
         inc si                 ; adresi ilerlet
         cmp ax,0               ; son basamak mi sayi sifirdan buyuk ise
-        JA basamak             ;
+        ja basamak             ;
            
            
     
@@ -229,15 +233,15 @@ org 100h
     xor si,si             ; si'yi temizle
     xor ax,ax             ;    
     mov cx, N             ; basamak sayisini tutan degiskeni cx'e ata ; amac basamaklarda gezinlelim ve toplamlarini bolunebilme kurallari icin kullanalim
-basamak_topla:                     ;
+basamak_topla:            ;
     add al, RAKAMLAR[si]  ;
     inc si                ; 
-    LOOP basamak_topla    ;         
+    loop basamak_topla    ;         
                           ;
     mov ch, 3             ;  3 icin  bolunebilme kurali
     div ch                ;
-    cmp ah, 0             ;
-    je asal_degil           ;
+    cmp ah, 0             ; kalan sifir mi
+    je asal_degil         ;
     
     
     
@@ -245,9 +249,9 @@ basamak_topla:                     ;
     je asal               ; asal etiketine dallan
                           ;
     cmp RAKAMLAR[0], 0    ; RAKAMLAR dizisi fibonacci sayinin tum basamak rakamlarini tuttuguna gore
-    je asal_degil           ;
+    je asal_degil         ;
     cmp RAKAMLAR[0], 5    ; 5 icin  bolunebilme kurali     
-    je asal_degil           ;
+    je asal_degil         ;
                                        
      
      
@@ -255,10 +259,10 @@ basamak_topla:                     ;
     je asal               ; asal etiketine dallan
                           ;
     xor ax,ax             ;
-    xor bx,bx             ;
+    xor bx,bx             ;   registerleri temizle
     xor si,si             ;
     xor di,di             ;     
-	mov di, offset YEDI   ; DIZI 
+	mov di, offset YEDI   ; 7'nin bolunebilme kurali icin basamaklarin carpilacagi skaler degerlerini tutan dizinin efektif adresini di'ye yukle 
                           ;
     mov cx, N             ; N basamak kadar gezin
 gezin:                    ;                       
@@ -277,7 +281,7 @@ gezin:                    ;
     Idiv ch               ;
                           ;
     cmp ah, 0             ;
-    je asal_degil           ;
+    je asal_degil         ;
                             
                             
                             
